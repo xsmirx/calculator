@@ -1,50 +1,7 @@
 "use strict";
 
-// input element
-const input = document.querySelector("#input");
-
-// numbers buttons ans event click on this buttons
-const numberButtons = Array.from(document.querySelectorAll(".number"));
-numberButtons.forEach((btn) => {
-  btn.onclick = (event) => {
-    if (operations.endOperation) {
-      input.value = "";
-      operations.endOperation = false;
-    }
-    input.value += event.srcElement.innerText;
-  };
-});
-
-// del button and event click on for her
-const delButton = document.querySelector("#del");
-delButton.onclick = () => {
-  input.value = input.value.slice(0, -1);
-};
-
-// reset button and event click for her
-const resetButton = document.querySelector("#reset");
-reset.onclick = () => {
-  input.value = "";
-  operations.currentOperator = operations.currentResult = "";
-};
-
-// point button and event click for her
-const pointButton = document.querySelector("#point");
-pointButton.onclick = () => {
-  if (!input.value.includes(".")) {
-    input.value += ".";
-  }
-};
-
-// operators buttons and event click for them
-const operatorButtonns = Array.from(document.querySelectorAll(".operator"));
-operatorButtonns.forEach((btn) => {
-  btn.onclick = (event) => onClickToOperator(event);
-});
-
-// operations object
-const operations = {
-  operators: {
+const calc = {
+  operation: {
     "+": (a, b) => a + b,
     "-": (a, b) => a - b,
     "*": (a, b) => a * b,
@@ -55,21 +12,71 @@ const operations = {
   endOperation: true,
 };
 
+const input = document.querySelector("#input");
+const numberButtons = Array.from(document.querySelectorAll(".number"));
+const operatorButtonns = Array.from(document.querySelectorAll(".operator"));
+const equalsButton = document.querySelector("#equals");
+const delButton = document.querySelector("#del");
+const resetButton = document.querySelector("#reset");
+const pointButton = document.querySelector("#point");
+const changeButton = document.querySelector("#change");
+
+numberButtons.forEach((btn) => {
+  btn.onclick = onClickToNumber;
+});
+
+operatorButtonns.forEach((btn) => {
+  btn.onclick = (event) => onClickToOperator(event);
+});
+
+equalsButton.onclick = () => {
+  calc.currentResult = calc.operation[calc.currentOperator](
+    calc.currentResult,
+    +input.value
+  );
+  input.value = calc.currentResult;
+  calc.currentOperator = calc.currentResult = "";
+};
+
+delButton.onclick = () => {
+  input.value = input.value.slice(0, -1);
+};
+
+reset.onclick = () => {
+  input.value = "";
+  calc.currentOperator = calc.currentResult = "";
+};
+
+pointButton.onclick = () => {
+  if (!input.value.includes(".")) {
+    input.value += ".";
+  }
+};
+
+changeButton.onclick = () => {
+  input.value = -input.value;
+};
+
+function onClickToNumber(event) {
+  if (calc.endOperation) {
+    input.value = "";
+    calc.endOperation = false;
+  }
+  input.value += event.srcElement.innerText;
+}
+
 function onClickToOperator(event) {
-  if (
-    event.srcElement.hasAttribute("data-operator") &&
-    !operations.currentOperator &&
-    !operations.currentResult
-  ) {
-    operations.currentOperator = event.srcElement.getAttribute("data-operator");
-    operations.currentResult = +input.value;
-    operations.endOperation = true;
+  if (!calc.currentOperator && !calc.currentResult) {
+    calc.currentOperator = event.srcElement.getAttribute("data-operator");
+    calc.currentResult = +input.value;
+    calc.endOperation = true;
   } else {
-    operations.currentResult = operations.operators[operations.currentOperator](
-      operations.currentResult,
+    calc.currentResult = calc.operation[calc.currentOperator](
+      calc.currentResult,
       +input.value
     );
-    input.value = operations.currentResult;
-    operations.endOperation = true;
+    calc.currentOperator = event.srcElement.getAttribute("data-operator");
+    input.value = calc.currentResult;
+    calc.endOperation = true;
   }
 }
